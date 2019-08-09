@@ -3,6 +3,9 @@ import Types exposing(Song)
 
 import Utils exposing (..)
 import Models exposing (Model)
+import List exposing (range, map, intersperse, filter, append, singleton, head)
+import String exposing (concat, contains, toUpper)
+import Maybe exposing (withDefault)
 
 -- Existe la funcion findSong que recibe
 -- una condicion y una lista de canciones
@@ -18,6 +21,8 @@ import Models exposing (Model)
 -- de canciones y devuelve el id de la primera
 -- idFirst : List Song -> String
 
+
+
 -- Debería darnos la url de la cancion en base al id
 urlById : String -> List Song -> String
 urlById id songs = (findSong (cancionPorId id) songs ).url
@@ -27,37 +32,55 @@ cancionPorId id song = id == song.id
 
 -- Debería darnos las canciones que tengan ese texto en nombre o artista
 filterByName : String -> List Song -> List Song
-filterByName text songs = songs
+filterByName text songs = filter (contieneTextoEnNombreOArtista text) songs
+--filterByName text songs = filter (contieneTextoEnNombreOArtista text) songs
+
+contieneTextoEnNombreOArtista : String -> Song -> Bool
+contieneTextoEnNombreOArtista texto song = contains (toUpper texto) (toUpper song.name) || contains (toUpper texto) (toUpper song.artist)
 
 -- Recibe un id y tiene que likear/dislikear una cancion
 -- switchear song.liked
 toggleLike : String -> List Song -> List Song
-toggleLike id songs = songs
+toggleLike id songs = map (switchPorId id) songs
+
+switchPorId : String -> Song -> Song
+switchPorId id song = if cancionPorId id song then switchear song else song
+
+switchear : Song -> Song
+switchear song = if song.liked then {song | liked = False} else {song | liked = True}
+
 
 -- Esta funcion tiene que decir si una cancion tiene
 -- nuestro like o no, por ahora funciona mal...
 -- hay que arreglarla
 isLiked : Song  -> Bool
-isLiked song = False
+isLiked song = song.liked
 
 -- Recibe una lista de canciones y nos quedamos solo con las que
 -- tienen un like
 filterLiked : List Song -> List Song
-filterLiked songs = songs
+filterLiked songs = filter isLiked songs
 
 -- Agrega una cancion a la cola de reproduccion
 -- (NO es necesario preocuparse porque este una sola vez)
 addSongToQueue : Song -> List Song -> List Song
-addSongToQueue song queue = queue
+addSongToQueue song queue = queue ++ (singleton song)
 
 -- Saca una cancion de la cola
 -- (NO es necesario que se elimine una sola vez si esta repetida)
 removeSongFromQueue : String -> List Song -> List Song
-removeSongFromQueue id queue = queue
+removeSongFromQueue id queue = filter (not << cancionPorId id) queue
 
 -- Hace que se reproduzca la canción que sigue y la saca de la cola
 playNextFromQueue : Model -> Model
-playNextFromQueue model = model
+playNextFromQueue model = let idPrimero = obtenerIdPrimeroDeLista model.queue
+                          in playSong (eliminarCancionDeQueueDeModel model idPrimero) idPrimero
+
+eliminarCancionDeQueueDeModel : Model -> String -> Model
+eliminarCancionDeQueueDeModel model id = {model | queue = removeSongFromQueue id model.queue}
+
+obtenerIdPrimeroDeLista : List Song -> String
+obtenerIdPrimeroDeLista lista = (withDefault defaultSong (head lista)).id
 
 -------- Funciones Listas --------
 
