@@ -22,7 +22,6 @@ import Maybe exposing (withDefault)
 -- idFirst : List Song -> String
 
 
-
 -- Debería darnos la url de la cancion en base al id
 urlById : String -> List Song -> String
 urlById id songs = (findSong (cancionPorId id) songs ).url
@@ -46,9 +45,11 @@ toggleLike id songs = map (switchPorId id) songs
 switchPorId : String -> Song -> Song
 switchPorId id song = if cancionPorId id song then switchear song else song
 
-switchear : Song -> Song
-switchear song = if song.liked then {song | liked = False} else {song | liked = True}
+--switchear : Song -> Song
+--switchear song = if song.liked then {song | liked = False} else {song | liked = True}
 
+switchear : Song -> Song
+switchear song = {song | liked = not (song.liked)}
 
 -- Esta funcion tiene que decir si una cancion tiene
 -- nuestro like o no, por ahora funciona mal...
