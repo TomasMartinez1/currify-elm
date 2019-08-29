@@ -74,14 +74,12 @@ removeSongFromQueue id queue = filter (not << cancionPorId id) queue
 
 -- Hace que se reproduzca la canción que sigue y la saca de la cola
 playNextFromQueue : Model -> Model
-playNextFromQueue model = let idPrimero = obtenerIdPrimeroDeLista model.queue
-                          in playSong (eliminarCancionDeQueueDeModel model idPrimero) idPrimero
+playNextFromQueue model = case model.queue of
+                        [] -> model
+                        _ -> (eliminarPrimeroDeQueueModel << playSong model) (idFirst model.queue)
 
-eliminarCancionDeQueueDeModel : Model -> String -> Model
-eliminarCancionDeQueueDeModel model id = {model | queue = removeSongFromQueue id model.queue}
-
-obtenerIdPrimeroDeLista : List Song -> String
-obtenerIdPrimeroDeLista lista = (withDefault defaultSong (head lista)).id
+eliminarPrimeroDeQueueModel : Model -> Model
+eliminarPrimeroDeQueueModel model = {model | queue = tailSafe model.queue}
 
 -------- Funciones Listas --------
 
